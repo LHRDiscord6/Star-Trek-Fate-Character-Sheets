@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Trek Personnel Record - Fate Core</title>
+    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --lcars-orange: #ff9900;
+            --lcars-purple: #cc99cc;
+            --lcars-blue: #99ccff;
+            --lcars-yellow: #ffcc00;
+            --lcars-peach: #ffcc99;
+            --lcars-red: #cc3333;
+            --lcars-dark: #000000;
+            --lcars-gray: #1c1c1c;
+            --font-main: 'Antonio', sans-serif;
+        }
+
+        @media print {
+            body { background: white !important; color: black !important; font-size: 9pt; }
+            input, textarea { border-bottom: 1px solid black !important; color: black !important; background: transparent !important; }
+            .no-print { display: none !important; }
+            .lcars-panel, .lcars-header-block { border-color: black !important; background: transparent !important; }
+            .lcars-title, .lcars-badge-row span { color: black !important; background: transparent !important; }
+            .page-break { page-break-after: always; }
+        }
+
+        @media screen {
+            body {
+                background-color: var(--lcars-dark);
+                color: white;
+                font-family: var(--font-main);
+                margin: 0;
+                padding: 15px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        .lcars-container {
+            width: 870px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-sizing: border-box;
+        }
+
+        /* Top Bar: Controls, Webhook, File I/O */
+        .lcars-comm-bar {
+            background-color: var(--lcars-gray);
+            border: 2px solid var(--lcars-orange);
+            border-radius: 20px;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .lcars-comm-bar label {
+            font-size: 10pt;
+            color: var(--lcars-orange);
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .lcars-comm-bar input {
+            flex-grow: 1;
+            min-width: 170px;
+            background: black;
+            border: 1px solid var(--lcars-blue);
+            color: var(--lcars-blue);
+            padding: 4px 8px;
+            font-family: var(--font-main);
+            border-radius: 4px;
+        }
+
+        .comm-status {
+            font-size: 10pt;
+            color: var(--lcars-yellow);
+            min-width: 110px;
+            text-align: right;
+        }
+
+        .tab-switcher {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        /* Header Blocks */
+        .lcars-header-block {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--lcars-purple);
+            color: black;
+            border-radius: 30px 30px 0 0;
+            padding: 8px 24px;
+            font-weight: bold;
+        }
+
+        .lcars-header-title {
+            font-size: 20pt;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .lcars-header-subtitle {
+            font-size: 11pt;
+            letter-spacing: 1px;
+            color: #222;
+        }
+
+        .lcars-badge-row {
+            display: flex;
+            gap: 8px;
+            background: black;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 9pt;
+            color: var(--lcars-yellow);
+            font-weight: bold;
+        }
+
+        /* Panels */
+        .lcars-panel {
+            border: 2px solid;
+            border-radius: 8px;
+            padding: 12px;
+            position: relative;
+            background-color: rgba(25, 25, 25, 0.7);
+        }
+
+        .lcars-panel.orange { border-color: var(--lcars-orange); }
+        .lcars-panel.purple { border-color: var(--lcars-purple); }
+        .lcars-panel.blue { border-color: var(--lcars-blue); }
+        .lcars-panel.yellow { border-color: var(--lcars-yellow); }
+
+        .lcars-title {
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background-color: var(--lcars-dark);
+            padding: 0 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 10pt;
+            letter-spacing: 1px;
+        }
+        .orange .lcars-title { color: var(--lcars-orange); }
+        .purple .lcars-title { color: var(--lcars-purple); }
+        .blue .lcars-title { color: var(--lcars-blue); }
+        .yellow .lcars-title { color: var(--lcars-yellow); }
+
+        /* Form Inputs */
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-family: var(--font-main);
+            font-size: 11pt;
+            padding: 3px 0;
+            box-sizing: border-box;
+            text-transform: uppercase;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-bottom-color: var(--lcars-blue);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+            text-transform: none;
+        }
+
+        label {
+            display: block;
+            font-size: 8.5pt;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 6px;
+        }
+
+        /* LCARS Action Buttons */
+        .lcars-btn {
+            background-color: var(--lcars-orange);
+            color: black;
+            border: none;
+            border-radius: 12px;
+            padding: 3px 10px;
+            font-family: var(--font-main);
+            font-weight: bold;
+            font-size: 9.5pt;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: opacity 0.1s ease;
+        }
+
+        .lcars-btn:hover { opacity: 0.85; }
+        .lcars-btn.blue { background-color: var(--lcars-blue); }
+        .lcars-btn.yellow { background-color: var(--lcars-yellow); }
+        .lcars-btn.purple { background-color: var(--lcars-purple); }
+        .lcars-btn.peach { background-color: var(--lcars-peach); }
+
+        .broadcast-btn {
+            background-color: var(--lcars-peach);
+            color: black;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            padding: 4px 10px;
+            font-size: 9.5pt;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+        }
+        .broadcast-btn:hover { background-color: var(--lcars-yellow); }
+
+        /* Grids & Stamps */
+        .grid-details {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px 12px;
+        }
+
+        .grid-two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .serial-stamp {
+            font-size: 8.5pt;
+            color: var(--lcars-peach);
+            font-weight: bold;
+            letter-spacing: 1px;
+            position: absolute;
+            right: 12px;
+            top: 4px;
+        }
+
+        /* Stress Trackers */
+        .stress-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 10px;
+            border-radius: 5px;
+        }
+
+        .stress-boxes {
+            display: flex;
+            gap: 6px;
+        }
+
+        .stress-boxes input[type="checkbox"] {
+            appearance: none;
+            width: 24px;
+            height: 20px;
+            border: 2px solid var(--lcars-orange);
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .stress-boxes input[type="checkbox"]:checked {
+            background-color: var(--lcars-orange);
+        }
+
+        .blue-boxes input[type="checkbox"] { border-color: var(--lcars-blue); }
+        .blue-boxes input[type="checkbox"]:checked { background-color: var(--lcars-blue); }
+
+        /* Skill Pyramid */
+        .skill-ladder-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            background: rgba(153, 204, 255, 0.08);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .skill-rank-badge {
+            width: 95px;
+            font-size: 11pt;
+            font-weight: bold;
+            background: var(--lcars-blue);
+            color: black;
+            text-align: center;
+            border-radius: 4px;
+            padding: 3px 0;
+            white-space: nowrap;
+        }
+
+        .skill-slots {
+            display: flex;
+            flex-grow: 1;
+            gap: 6px;
+        }
+
+        .skill-slot-item {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            gap: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="lcars-container">
+
+    <!-- Subspace Relay, Audio, Broadcast, and File Import/Export -->
+    <div class="lcars-comm-bar no-print">
+        <label for="webhook-url">SUBSPACE RELAY:</label>
+        <input type="password" id="webhook-url" placeholder="Paste Discord Webhook URL here..." onchange="saveWebhook()">
+        <button class="lcars-btn blue" onclick="toggleWebhookVisibility()">SHOW/HIDE</button>
+        <button class="lcars-btn yellow" id="audio-toggle-btn" onclick="toggleAudio()">AUDIO: ON</button>
+        <button class="broadcast-btn" onclick="broadcastStatus()">📡 BROADCAST</button>
+        <button class="lcars-btn orange" onclick="exportCharacterFile()">💾 EXPORT PADD</button>
+        <button class="lcars-btn purple" onclick="triggerImport()">📂 IMPORT PADD</button>
+        <input type="file" id="import-file-input" accept=".json" style="display: none;" onchange="importCharacterFile(event)">
+        <div id="comm-status" class="comm-status">READY</div>
+    </div>
+
+    <!-- PADD Tab Navigator -->
+    <div class="tab-switcher no-print">
+        <button class="lcars-btn orange" onclick="showPage(1)">PAGE 1: RECORD & STATUS</button>
+        <button class="lcars-btn purple" onclick="showPage(2)">PAGE 2: SKILLS & PROTOCOLS</button>
+        <button class="lcars-btn blue" onclick="showPage('both')">VIEW ALL (FULL PADD)</button>
+    </div>
+
+    <!-- ================= PAGE 1 ================= -->
+    <div id="page-1" class="page-break" style="display: flex; flex-direction: column; gap: 12px;">
+        
+        <!-- Header -->
+        <header class="lcars-header-block">
+            <div>
+                <div class="lcars-header-title">STAR TREK PERSONNEL RECORD</div>
+                <div class="lcars-header-subtitle">POWERED BY FATE</div>
+            </div>
+            <div class="lcars-badge-row">
+                <span>7448</span>
+                <span>L-R8 078-6</span>
+                <span>89 151</span>
+                <span>87449</span>
+            </div>
+        </header>
+
+        <!-- Details Section -->
+        <section class="lcars-panel yellow">
+            <div class="lcars-title">DETAILS</div>
+            <div class="serial-stamp">CD72 11</div>
+            <div class="grid-details">
+                <div>
+                    <label for="char-name">NAME</label>
+                    <input type="text" id="char-name" oninput="saveData()">
+                </div>
+                <div>
+                    <label for="char-profession">PROFESSION</label>
+                    <input type="text" id="char-profession" oninput="saveData()">
+                </div>
+                <div>
+                    <label for="char-species">SPECIES</label>
+                    <input type="text" id="char-species" oninput="saveData()">
+                </div>
+                <div>
+                    <label for="char-rank">RANK</label>
+                    <input type="text" id="char-rank" oninput="saveData()">
+                </div>
+                <div>
+                    <label for="char-gender">GENDER</label>
+                    <input type="text" id="char-gender" oninput="saveData()">
+                </div>
+                <div>
+                    <label for="char-build">BUILD</label>
+                    <input type="text" id="char-build" oninput="saveData()">
+                </div>
+                <div>
+                    <label for="char-age">AGE</label>
+                    <input type="text" id="char-age" oninput="saveData()">
+                </div>
+                <div>
+                    <label for="char-height">HEIGHT</label>
+                    <input type="text" id="char-height" oninput="saveData()">
+                </div>
+                <div>
+                    <label for="char-eyes">EYES</label>
+                    <input type="text" id="char-eyes" oninput="saveData()">
+                </div>
+                <div>
+                    <label for="char-hair">HAIR</label>
+                    <input type="text" id="char-hair" oninput="saveData()">
+                </div>
+                <div>
+                    <label for="char-assignment">ASSIGNMENT</label>
+                    <input type="text" id="char-assignment" oninput="saveData()">
+                </div>
+                <div>
+                    <label for="char-position">POSITION</label>
+                    <input type="text" id="char-position" oninput="saveData()">
+                </div>
+            </div>
+        </section>
+
+        <!-- Aspects & Fate Points Row -->
+        <div class="grid-two-col">
+            
+            <!-- Aspects -->
+            <section class="lcars-panel orange">
+                <div class="lcars-title">ASPECTS</div>
+                <div class="serial-stamp">3970 21</div>
+                
+                <label for="aspect-hc">HIGH CONCEPT</label>
+                <input type="text" id="aspect-hc" oninput="saveData()">
+
+                <label for="aspect-tr">TROUBLE</label>
+                <input type="text" id="aspect-tr" oninput="saveData()">
+
+                <label for="aspect-3">ASPECT 3</label>
+                <input type="text" id="aspect-3" oninput="saveData()">
+
+                <label for="aspect-4">ASPECT 4</label>
+                <input type="text" id="aspect-4" oninput="saveData()">
+
+                <label for="aspect-5">ASPECT 5</label>
+                <input type="text" id="aspect-5" oninput="saveData()">
+            </section>
+
+            <!-- Fate Points & Consequences -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                
+                <!-- Fate Points -->
+                <section class="lcars-panel blue">
+                    <div class="lcars-title">FATE POINTS</div>
+                    <div class="serial-stamp">078 6</div>
+                    <div style="display: flex; justify-content: space-around; align-items: center; padding: 4px 0;">
+                        <div style="text-align: center;">
+                            <label for="fp-refresh">REFRESH FP</label>
+                            <input type="number" id="fp-refresh" value="3" style="width: 50px; font-size: 16pt; text-align: center;" oninput="saveData()">
+                        </div>
+                        <div style="text-align: center;">
+                            <label for="fp-current">CURRENT FP</label>
+                            <input type="number" id="fp-current" value="3" style="width: 50px; font-size: 16pt; text-align: center;" oninput="saveData()">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Consequences -->
+                <section class="lcars-panel yellow" style="flex-grow: 1;">
+                    <div class="lcars-title">CONSEQUENCES</div>
+                    <div class="serial-stamp">20</div>
+                    
+                    <label for="cons-mild">MILD 02</label>
+                    <input type="text" id="cons-mild" oninput="saveData()">
+
+                    <label for="cons-mod">MODERATE 04</label>
+                    <input type="text" id="cons-mod" oninput="saveData()">
+
+                    <label for="cons-sev">SEVERE 06</label>
+                    <input type="text" id="cons-sev" oninput="saveData()">
+                </section>
+            </div>
+        </div>
+
+        <!-- Stress Tracks (Expanded to 6 Boxes Each) -->
+        <section class="lcars-panel purple">
+            <div class="lcars-title">STRESS TRACKS (EXPANDED)</div>
+            <div class="serial-stamp">87448 // 17-884</div>
+            <div class="grid-two-col">
+                
+                <!-- Physical Stress -->
+                <div>
+                    <div class="stress-row">
+                        <span style="font-weight: bold; color: var(--lcars-peach);">PHYSICAL (PHYSIQUE)</span>
+                        <div class="stress-boxes">
+                            <label style="margin:0;"><input type="checkbox" id="ps-1" onchange="onBoxCheck()"> 1</label>
+                            <label style="margin:0;"><input type="checkbox" id="ps-2" onchange="onBoxCheck()"> 2</label>
+                            <label style="margin:0;"><input type="checkbox" id="ps-3" onchange="onBoxCheck()"> 3</label>
+                            <label style="margin:0;"><input type="checkbox" id="ps-4" onchange="onBoxCheck()"> 4</label>
+                            <label style="margin:0;"><input type="checkbox" id="ps-5" onchange="onBoxCheck()"> 5</label>
+                            <label style="margin:0;"><input type="checkbox" id="ps-6" onchange="onBoxCheck()"> 6</label>
+                        </div>
+                    </div>
+                    <div style="font-size: 8pt; color: var(--lcars-yellow); margin-top: 4px;">SERIAL: 11551 // CAP: 6 SHIFTS</div>
+                </div>
+
+                <!-- Mental Stress -->
+                <div>
+                    <div class="stress-row">
+                        <span style="font-weight: bold; color: var(--lcars-blue);">MENTAL (WILL)</span>
+                        <div class="stress-boxes blue-boxes">
+                            <label style="margin:0;"><input type="checkbox" id="ms-1" onchange="onBoxCheck()"> 1</label>
+                            <label style="margin:0;"><input type="checkbox" id="ms-2" onchange="onBoxCheck()"> 2</label>
+                            <label style="margin:0;"><input type="checkbox" id="ms-3" onchange="onBoxCheck()"> 3</label>
+                            <label style="margin:0;"><input type="checkbox" id="ms-4" onchange="onBoxCheck()"> 4</label>
+                            <label style="margin:0;"><input type="checkbox" id="ms-5" onchange="onBoxCheck()"> 5</label>
+                            <label style="margin:0;"><input type="checkbox" id="ms-6" onchange="onBoxCheck()"> 6</label>
+                        </div>
+                    </div>
+                    <div style="font-size: 8pt; color: var(--lcars-blue); margin-top: 4px;">SERIAL: 25 378 // CAP: 6 SHIFTS</div>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ================= PAGE 2 ================= -->
+    <div id="page-2" style="display: flex; flex-direction: column; gap: 12px;">
+        
+        <!-- Header -->
+        <header class="lcars-header-block" style="background: var(--lcars-blue);">
+            <div>
+                <div class="lcars-header-title">DUTY PROFILE & PROTOCOLS</div>
+                <div class="lcars-header-subtitle">SKILLS / STUNTS / EXTRAS</div>
+            </div>
+            <div class="lcars-badge-row">
+                <span>SEC-02</span>
+                <span>442-90</span>
+                <span>FATE PYRAMID</span>
+            </div>
+        </header>
+
+        <!-- Description -->
+        <section class="lcars-panel yellow">
+            <div class="lcars-title">DESCRIPTION</div>
+            <textarea id="desc" placeholder="Physical description, service history, personal notes..." style="height: 65px;" oninput="saveData()"></textarea>
+        </section>
+
+        <!-- Skills Pyramid with Rollers -->
+        <section class="lcars-panel blue">
+            <div class="lcars-title">SKILLS (CLICK ROLL TO TRANSMIT)</div>
+            
+            <!-- SUPERB 05 -->
+            <div class="skill-ladder-row">
+                <div class="skill-rank-badge">SUPERB 05</div>
+                <div class="skill-slots">
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-5-1" placeholder="Superb (+5) Skill" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-5-1', 5)">ROLL</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GREAT 04 -->
+            <div class="skill-ladder-row">
+                <div class="skill-rank-badge">GREAT 04</div>
+                <div class="skill-slots">
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-4-1" placeholder="Great (+4) Skill" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-4-1', 4)">ROLL</button>
+                    </div>
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-4-2" placeholder="Great (+4) Skill" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-4-2', 4)">ROLL</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GOOD 03 -->
+            <div class="skill-ladder-row">
+                <div class="skill-rank-badge">GOOD 03</div>
+                <div class="skill-slots">
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-3-1" placeholder="Good (+3)" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-3-1', 3)">ROLL</button>
+                    </div>
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-3-2" placeholder="Good (+3)" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-3-2', 3)">ROLL</button>
+                    </div>
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-3-3" placeholder="Good (+3)" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-3-3', 3)">ROLL</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAIR 02 -->
+            <div class="skill-ladder-row">
+                <div class="skill-rank-badge">FAIR 02</div>
+                <div class="skill-slots">
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-2-1" placeholder="Fair (+2)" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-2-1', 2)">ROLL</button>
+                    </div>
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-2-2" placeholder="Fair (+2)" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-2-2', 2)">ROLL</button>
+                    </div>
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-2-3" placeholder="Fair (+2)" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-2-3', 2)">ROLL</button>
+                    </div>
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-2-4" placeholder="Fair (+2)" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-2-4', 2)">ROLL</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AVERAGE 01 -->
+            <div class="skill-ladder-row">
+                <div class="skill-rank-badge">AVERAGE 01</div>
+                <div class="skill-slots">
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-1-1" placeholder="Avg (+1)" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-1-1', 1)">ROLL</button>
+                    </div>
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-1-2" placeholder="Avg (+1)" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-1-2', 1)">ROLL</button>
+                    </div>
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-1-3" placeholder="Avg (+1)" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-1-3', 1)">ROLL</button>
+                    </div>
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-1-4" placeholder="Avg (+1)" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-1-4', 1)">ROLL</button>
+                    </div>
+                    <div class="skill-slot-item">
+                        <input type="text" id="sk-1-5" placeholder="Avg (+1)" oninput="saveData()">
+                        <button class="lcars-btn" onclick="rollNamedSkill('sk-1-5', 1)">ROLL</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual Custom Roll -->
+            <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 8px;">
+                <label style="margin:0;">CUSTOM ROLL MODIFIER:</label>
+                <input type="number" id="custom-mod" value="0" style="width: 50px; text-align: center;">
+                <button class="lcars-btn purple" onclick="rollCustom()">ENGAGE 4dF</button>
+            </div>
+        </section>
+
+        <!-- Stunts & Extras -->
+        <div class="grid-two-col">
+            <section class="lcars-panel orange">
+                <div class="lcars-title">STUNTS</div>
+                <textarea id="stunts" placeholder="Special Stunts, mechanical bonuses, and specializations..." style="height: 120px;" oninput="saveData()"></textarea>
+            </section>
+
+            <section class="lcars-panel purple">
+                <div class="lcars-title">EXTRAS</div>
+                <textarea id="extras" placeholder="Ship assets, Starfleet clearances, special equipment..." style="height: 120px;" oninput="saveData()"></textarea>
+            </section>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    // ==========================================
+    // LCARS WEB AUDIO ENGINE
+    // ==========================================
+    let audioCtx = null;
+    let audioEnabled = true;
+
+    function getAudioContext() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        return audioCtx;
+    }
+
+    function toggleAudio() {
+        audioEnabled = !audioEnabled;
+        const btn = document.getElementById('audio-toggle-btn');
+        btn.textContent = audioEnabled ? "AUDIO: ON" : "AUDIO: OFF";
+        btn.style.backgroundColor = audioEnabled ? "var(--lcars-yellow)" : "var(--lcars-gray)";
+        btn.style.color = audioEnabled ? "black" : "white";
+        if (audioEnabled) playLcarsPip();
+    }
+
+    function playLcarsPip() {
+        if (!audioEnabled) return;
+        try {
+            const ctx = getAudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1150, ctx.currentTime);
+
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start();
+            osc.stop(ctx.currentTime + 0.08);
+        } catch (e) { console.error(e); }
+    }
+
+    function playLcarsRoll() {
+        if (!audioEnabled) return;
+        try {
+            const ctx = getAudioContext();
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1050, now);
+            osc.frequency.setValueAtTime(1450, now + 0.045);
+
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.setValueAtTime(0.15, now + 0.045);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start();
+            osc.stop(now + 0.12);
+        } catch (e) { console.error(e); }
+    }
+
+    function playLcarsSuccess() {
+        if (!audioEnabled) return;
+        try {
+            const ctx = getAudioContext();
+            const now = ctx.currentTime;
+            [880, 1174.66, 1760].forEach((freq, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const start = now + (idx * 0.045);
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, start);
+
+                gain.gain.setValueAtTime(0.12, start);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + 0.06);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start(start);
+                osc.stop(start + 0.06);
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    function playLcarsError() {
+        if (!audioEnabled) return;
+        try {
+            const ctx = getAudioContext();
+            const now = ctx.currentTime;
+            [220, 246.94].forEach(freq => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(freq, now);
+
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.18);
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    function onBoxCheck() {
+        playLcarsPip();
+        saveData();
+    }
+
+    // ==========================================
+    // FATE MECHANICS & WEBHOOK ROLLS
+    // ==========================================
+    function getFateLadder(val) {
+        if (val >= 8) return "Legendary (+8)";
+        if (val === 7) return "Epic (+7)";
+        if (val === 6) return "Fantastic (+6)";
+        if (val === 5) return "Superb (+5)";
+        if (val === 4) return "Great (+4)";
+        if (val === 3) return "Good (+3)";
+        if (val === 2) return "Fair (+2)";
+        if (val === 1) return "Average (+1)";
+        if (val === 0) return "Mediocre (0)";
+        if (val === -1) return "Poor (-1)";
+        if (val === -2) return "Terrible (-2)";
+        return `Abysmal (${val})`;
+    }
+
+    function roll4dF() {
+        const faces = [-1, 0, 1];
+        const symbols = { "-1": "[-]", "0": "[ ]", "1": "[+]" };
+        let diceDisplay = "";
+        let diceSum = 0;
+
+        for (let i = 0; i < 4; i++) {
+            const roll = faces[Math.floor(Math.random() * faces.length)];
+            diceDisplay += symbols[roll] + " ";
+            diceSum += roll;
+        }
+        return { display: diceDisplay.trim(), sum: diceSum };
+    }
+
+    async function sendToDiscord(actionName, modifier) {
+        playLcarsRoll();
+
+        const webhookUrl = document.getElementById('webhook-url').value.trim();
+        const statusEl = document.getElementById('comm-status');
+
+        if (!webhookUrl || !webhookUrl.startsWith("http")) {
+            playLcarsError();
+            statusEl.textContent = "ERROR: NO WEBHOOK";
+            statusEl.style.color = "var(--lcars-red)";
+            alert("Subspace Relay Offline: Enter a valid Discord Webhook URL at the top.");
+            return;
+        }
+
+        const charName = document.getElementById('char-name').value.trim() || "Starfleet Officer";
+        const rank = document.getElementById('char-rank').value.trim();
+        const displayName = rank ? `${rank} ${charName}` : charName;
+
+        const dice = roll4dF();
+        const total = dice.sum + modifier;
+        const ladderTier = getFateLadder(total);
+
+        const payload = {
+            username: displayName,
+            embeds: [{
+                title: `${actionName}: ${total >= 0 ? '+' + total : total} (${ladderTier})`,
+                description: `**Dice Rolled:** \`${dice.display}\`\n**Dice Total:** ${dice.sum >= 0 ? '+' + dice.sum : dice.sum} | **Skill Rating:** ${modifier >= 0 ? '+' + modifier : modifier}`,
+                color: 16750848
+            }]
+        };
+
+        statusEl.textContent = "TRANSMITTING...";
+        statusEl.style.color = "var(--lcars-yellow)";
+
+        try {
+            const response = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                playLcarsSuccess();
+                statusEl.textContent = "TRANSMITTED";
+                statusEl.style.color = "var(--lcars-blue)";
+                setTimeout(() => { statusEl.textContent = "READY"; }, 3000);
+            } else {
+                throw new Error("HTTP error " + response.status);
+            }
+        } catch (err) {
+            playLcarsError();
+            statusEl.textContent = "RELAY FAILED";
+            statusEl.style.color = "var(--lcars-red)";
+            console.error(err);
+        }
+    }
+
+    function rollNamedSkill(inputId, mod) {
+        const skillName = document.getElementById(inputId).value.trim() || `Skill (+${mod})`;
+        sendToDiscord(skillName, mod);
+    }
+
+    function rollCustom() {
+        const mod = parseInt(document.getElementById('custom-mod').value, 10) || 0;
+        sendToDiscord("Action Check", mod);
+    }
+
+    // ==========================================
+    // BROADCAST STATUS TO DISCORD (TELEMETRY)
+    // ==========================================
+    async function broadcastStatus() {
+        playLcarsRoll();
+
+        const webhookUrl = document.getElementById('webhook-url').value.trim();
+        const statusEl = document.getElementById('comm-status');
+
+        if (!webhookUrl || !webhookUrl.startsWith("http")) {
+            playLcarsError();
+            statusEl.textContent = "ERROR: NO WEBHOOK";
+            statusEl.style.color = "var(--lcars-red)";
+            alert("Subspace Relay Offline: Please input your Discord Webhook URL.");
+            return;
+        }
+
+        const name = document.getElementById('char-name').value.trim() || "Unknown Officer";
+        const rank = document.getElementById('char-rank').value.trim() || "Cadet";
+        const assignment = document.getElementById('char-assignment').value.trim() || "Starfleet Academy";
+        const position = document.getElementById('char-position').value.trim() || "Duty Officer";
+
+        const highConcept = document.getElementById('aspect-hc').value.trim() || "None";
+        const trouble = document.getElementById('aspect-tr').value.trim() || "None";
+        const a3 = document.getElementById('aspect-3').value.trim();
+        const a4 = document.getElementById('aspect-4').value.trim();
+        const a5 = document.getElementById('aspect-5').value.trim();
+
+        let aspectList = `**High Concept:** ${highConcept}\n**Trouble:** ${trouble}`;
+        if (a3) aspectList += `\n**Aspect 3:** ${a3}`;
+        if (a4) aspectList += `\n**Aspect 4:** ${a4}`;
+        if (a5) aspectList += `\n**Aspect 5:** ${a5}`;
+
+        const fpCurrent = document.getElementById('fp-current').value || "0";
+        const fpRefresh = document.getElementById('fp-refresh').value || "0";
+
+        // Read all 6 stress boxes
+        const ps = [1,2,3,4,5,6].map(i => document.getElementById(`ps-${i}`).checked ? `[X]` : `[ ]`).join(' ');
+        const ms = [1,2,3,4,5,6].map(i => document.getElementById(`ms-${i}`).checked ? `[X]` : `[ ]`).join(' ');
+
+        const consMild = document.getElementById('cons-mild').value.trim() || "None";
+        const consMod = document.getElementById('cons-mod').value.trim() || "None";
+        const consSev = document.getElementById('cons-sev').value.trim() || "None";
+
+        const payload = {
+            username: `${rank} ${name}`,
+            embeds: [{
+                title: `📋 OFFICER STATUS REPORT: ${rank} ${name}`,
+                description: `**Assignment:** ${assignment} | **Position:** ${position}\n**Fate Points:** Current: **${fpCurrent}** (Refresh: ${fpRefresh})`,
+                color: 16763904,
+                fields: [
+                    { name: "Aspects", value: aspectList, inline: false },
+                    { name: "Stress Tracks", value: `**Physical (1-6):** \`${ps}\`\n**Mental (1-6):** \`${ms}\``, inline: true },
+                    { name: "Consequences", value: `**Mild (2):** ${consMild}\n**Moderate (4):** ${consMod}\n**Severe (6):** ${consSev}`, inline: true }
+                ],
+                footer: { text: "LCARS PADD Telemetry Sync // Stardate Standard" }
+            }]
+        };
+
+        statusEl.textContent = "BROADCASTING...";
+        statusEl.style.color = "var(--lcars-yellow)";
+
+        try {
+            const response = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                playLcarsSuccess();
+                statusEl.textContent = "STATUS BROADCASTED";
+                statusEl.style.color = "var(--lcars-blue)";
+                setTimeout(() => { statusEl.textContent = "READY"; }, 3500);
+            } else {
+                throw new Error("HTTP error " + response.status);
+            }
+        } catch (err) {
+            playLcarsError();
+            statusEl.textContent = "RELAY FAILED";
+            statusEl.style.color = "var(--lcars-red)";
+            console.error(err);
+        }
+    }
+
+    // ==========================================
+    // EXPORT & IMPORT FILE HANDLERS
+    // ==========================================
+    function exportCharacterFile() {
+        playLcarsPip();
+        const inputs = document.querySelectorAll('input, textarea');
+        const sheetData = {};
+        
+        inputs.forEach(el => {
+            if (el.id && el.id !== 'webhook-url' && el.id !== 'custom-mod' && el.id !== 'import-file-input') {
+                sheetData[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+            }
+        });
+
+        const charName = document.getElementById('char-name').value.trim() || "Starfleet_Officer";
+        const sanitizedFilename = `LCARS_Record_${charName.replace(/[^a-zA-Z0-9_-]/g, '_')}.json`;
+        
+        const jsonBlob = new Blob([JSON.stringify(sheetData, null, 2)], { type: "application/json" });
+        const downloadUrl = URL.createObjectURL(jsonBlob);
+        
+        const tempLink = document.createElement('a');
+        tempLink.href = downloadUrl;
+        tempLink.download = sanitizedFilename;
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        document.body.removeChild(tempLink);
+        URL.revokeObjectURL(downloadUrl);
+
+        playLcarsSuccess();
+        const statusEl = document.getElementById('comm-status');
+        statusEl.textContent = "PADD EXPORTED";
+        statusEl.style.color = "var(--lcars-blue)";
+        setTimeout(() => { statusEl.textContent = "READY"; }, 3000);
+    }
+
+    function triggerImport() {
+        playLcarsPip();
+        document.getElementById('import-file-input').click();
+    }
+
+    function importCharacterFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                for (const key in data) {
+                    const el = document.getElementById(key);
+                    if (el) {
+                        if (el.type === 'checkbox') el.checked = data[key];
+                        else el.value = data[key];
+                    }
+                }
+                saveData();
+                playLcarsSuccess();
+                const statusEl = document.getElementById('comm-status');
+                statusEl.textContent = "PADD IMPORTED";
+                statusEl.style.color = "var(--lcars-blue)";
+                setTimeout(() => { statusEl.textContent = "READY"; }, 3000);
+            } catch (err) {
+                playLcarsError();
+                alert("File Read Failure: Invalid LCARS JSON file format.");
+                console.error("Import Error:", err);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    // ==========================================
+    // UI NAVIGATION & STORAGE
+    // ==========================================
+    function showPage(num) {
+        playLcarsPip();
+        const p1 = document.getElementById('page-1');
+        const p2 = document.getElementById('page-2');
+
+        if (num === 1) {
+            p1.style.display = 'flex';
+            p2.style.display = 'none';
+        } else if (num === 2) {
+            p1.style.display = 'none';
+            p2.style.display = 'flex';
+        } else {
+            p1.style.display = 'flex';
+            p2.style.display = 'flex';
+        }
+    }
+
+    function saveWebhook() {
+        playLcarsPip();
+        const url = document.getElementById('webhook-url').value;
+        localStorage.setItem('lcars_personnel_webhook', url);
+    }
+
+    function toggleWebhookVisibility() {
+        playLcarsPip();
+        const input = document.getElementById('webhook-url');
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function saveData() {
+        const inputs = document.querySelectorAll('input, textarea');
+        const sheetData = {};
+        inputs.forEach(el => {
+            if (el.id && el.id !== 'webhook-url' && el.id !== 'custom-mod' && el.id !== 'import-file-input') {
+                sheetData[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+            }
+        });
+        localStorage.setItem('lcars_personnel_data', JSON.stringify(sheetData));
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedUrl = localStorage.getItem('lcars_personnel_webhook');
+        if (savedUrl) document.getElementById('webhook-url').value = savedUrl;
+
+        const savedData = localStorage.getItem('lcars_personnel_data');
+        if (savedData) {
+            try {
+                const data = JSON.parse(savedData);
+                for (const key in data) {
+                    const el = document.getElementById(key);
+                    if (el) {
+                        if (el.type === 'checkbox') el.checked = data[key];
+                        else el.value = data[key];
+                    }
+                }
+            } catch (e) {
+                console.error("Error restoring character record:", e);
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
